@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH --job-name=llama_online
+#SBATCH --partition=gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --gres=gpu:a100:2
+#SBATCH --mem=128G
+#SBATCH --time=2-00:00:00
+#SBATCH --output=slurm_logs/%x-%j.out
+#SBATCH --error=slurm_logs/%x-%j.err
+
+source /project2/kpsounis_171/ryanswif/kd_first_principles/scripts/slurm/common.slurm
+which python
+which kdfp
+kdfp run -c kdfp/configs/llama/llama_40m_toks_seq1024_up_online.yaml

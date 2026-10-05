@@ -1,0 +1,2 @@
+All of the tasks and task-related utilities were either directly copied or very slightly modified  
+from EleutherAI's [`lm-evaluation-harness`](https://github.com/EleutherAI/lm-evaluation-harness/tree/main/lm_eval/tasks)

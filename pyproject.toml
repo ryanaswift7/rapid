@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kdfp"
+version = "0.0.1"
+dependencies = [
+    # "pyyaml",
+    # "transformer_lens",
+    # "pydantic",
+    # "torch",
+]
+
+[tool.setuptools]
+packages = {find = {}}
+
+[project.scripts]
+kdfp = "kdfp.main:main"
+data-gen = "kdfp.utils.data_gen:main"
+plot-gen = "kdfp.utils.plot_gen:main"
+ted = "kdfp.comparisons.ted:main"
+minillm = "kdfp.comparisons.minillm:main"
+make-jsd-fig = "kdfp.utils.make_jsd_fig:main"
+hf-model-push = "kdfp.utils.hf_model_push:main"
+rep-sim = "representation_similarity.analyze:main"

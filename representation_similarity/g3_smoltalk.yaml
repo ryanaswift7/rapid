@@ -1,0 +1,42 @@
+# Paths may point to an experiment directory containing seed* subdirectories,
+# or directly to one seed directory containing pl_config.json.
+inputs:
+  - label: RAPID Gemma 3
+    path: iclr_fix/g3_smoltalk_rand_n_base/models/students/pretrained-kd-down_randomized_per-component-with_resid
+  - label: Learned Projector Gemma 3
+    path: iclr_fix/g3_smoltalk_online/models/students/pretrained-kd-up_online_per-component-with_resid
+
+output_dir: iclr_rep_sim/g3
+samples: 500
+analysis_seeds:
+  - 123
+  - 45
+  - 67
+seq_len: 1024
+batch_size: 4
+device: cuda
+dtype: bfloat16
+
+logging:
+  level: INFO
+  progress: true
+
+dataset:
+  name: openai/gsm8k
+  subset: main
+  split: train
+  # Supported values: question, question_and_answer
+  format: question_and_answer
+
+# Supported values: resid, attn_out, mlp
+activation_component: resid
+
+# Both values must remain 4. The script averages the full similarity matrix
+# over contiguous teacher/student layer pools to produce a 4x4 result.
+pooling:
+  teacher_bins: 4
+  student_bins: 4
+
+metrics:
+  - cka
+  - rsa

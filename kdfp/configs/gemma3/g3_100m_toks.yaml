@@ -1,0 +1,170 @@
+suite_title: &suite 'g3_100m_toks'
+models:
+  teacher:
+    name: &teacher_name google/gemma-3-1b-it
+    layer_reduction_factor: null
+  pretrained:
+    name: google/gemma-3-270m
+    tokenizer_name: google/gemma-3-270m-it
+    layer_reduction_factor: null
+  shallow:
+    name: *teacher_name
+    layer_reduction_factor: 0.45  # this was not updated for llama
+
+directories:
+  root: rand_proj
+  cache: cache
+  models: models
+  ray: ray-100m
+  lightning: lightning-100m
+
+experiment_space:
+  seeds: [3]  # [3, 33, 333]
+  student_types: ["pretrained"]  # , "shallow"]
+  objective:
+    weight_variants:
+      # - "only_outputs"
+      # - "balanced"
+      # - "no_embed"
+      ### - "no_attn_scores"
+      # - "no_attn_out"
+      # - "no_mlp"
+      # - "no_resid"
+      # - "with_embed"
+      ### - "with_attn_scores"
+      # - "with_attn_out"
+      # - "with_mlp"
+      - "with_resid"
+  projection:
+    init_mode: 'per-component'
+    directions: ["up", "down"]
+    training_methods: ["online", "randomized"]   # "offline"
+    offline_alignment_betas: [0.5]  # [0.0, 0.25, 0.5, 0.75, 1.0]
+  filters:
+    include: null
+    exclude: null
+
+training_params:
+  dataset:
+      name: open-thoughts/OpenThoughts-114k
+      subset: default
+      split: train
+      shuffle: true
+      token_rename: false
+  seq_len: 1024
+  train_batch_size: 3
+  test_batch_size: 1
+  total_tokens: 100000000
+  num_epochs: 1
+  n_trials: 8
+  reproducible_backend: true
+  device: cuda
+  torch_dtype: bfloat16
+
+  controls:
+    # NOTE: baselines are teacher (always with no training,
+    # also ft versions if requested below [FIXME]), finetuned
+    # students, and students with no training
+    finetune_teacher: false
+    get_baselines:
+      - teacher
+      - no_train
+      - ft
+      - kd_traditional_fwd_kld
+      # - kd_traditional_rev_kld
+      # - kd_resid_fwd_kld
+      # - kd_resid_rev_kld
+    run_or_test: run
+
+  resources:
+    max_failures: 5
+    stream_task_data: true
+    projector:
+      num_data_workers: 12
+    teacher:
+      num_data_workers: 0
+    student:
+      num_data_workers: 0
+
+  offline_projection:
+    dataset:
+      name: open-thoughts/OpenThoughts-114k
+      subset: default
+      split: train
+      shuffle: true
+      token_rename: false
+    total_tokens: 1000000
+    cache_batch_size: 8
+    train_batch_size: 128
+    num_epochs: 1
+    n_trials: 4
+    force_cache_all: false
+
+  wandb:
+    project: 'reasoning-stage-1-baseline-100m'
+    group: *suite
+
+
+hook_types:
+  single:
+    - "hook_embed"
+  per_layer:
+    # - "attn.hook_attn_scores"
+    - "hook_attn_out"
+    - "hook_mlp_out"
+    - "hook_resid_post"
+
+
+hparams:
+  fixed: null
+    # teacher:
+    #   lr: 2e-5
+    #   weight_decay: 2e-4
+    #   max_grad_norm: 0.5
+
+    # pretrained:
+    #   ft:
+    #     lr: 3.4e-5
+    #     weight_decay: 1e-2
+    #     max_grad_norm: 2.0
+    #     temperature: 1.0
+    #   kd:
+    #     lr: 2.5e-5
+    #     weight_decay: 4.9e-4
+    #     max_grad_norm: 0.4
+    #     temperature: 0.8
+
+    # shallow:
+    #   ft:
+    #     lr: 4.9e-5
+    #     weight_decay: 3e-4
+    #     max_grad_norm: 0.4
+    #     temperature: 3e-1
+    #   kd:
+    #     lr: 4.3e-4
+    #     weight_decay: 4.9e-2
+    #     max_grad_norm: 3e-1
+    #     temperature: 0.5
+
+    # off_proj:
+    #   lr: 4.5e-4
+    #   weight_decay: 1.3e-2
+    #   tied_weights: true
+
+  tune:
+    lr:
+      choices: [8e-6, 1.2e-5, 1.8e-5, 2.5e-5, 3e-5]
+    weight_decay:
+      choices: [1e-4, 1e-3, 1e-2, 5e-2]
+    temperature:
+      choices: [0.7, 0.9, 1.1, 1.4, 1.8]
+    max_grad_norm:
+      choices: [0.5, 1.0, 2.0]
+
+tasks:
+  names:
+    - leaderboard_bbh
+    - leaderboard_gpqa
+    - mmlu
+    - arc_challenge
+    # - gsm8k

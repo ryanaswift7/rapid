@@ -1,0 +1,179 @@
+suite_title: &suite 'base_100m_tokens'
+models:
+  teacher:
+    name: &teacher_name EleutherAI/pythia-2.8b-deduped
+    layer_reduction_factor: null
+  pretrained:
+    name: EleutherAI/pythia-1.4b-deduped
+    layer_reduction_factor: null
+  shallow:
+    name: *teacher_name
+    layer_reduction_factor: 0.45
+
+directories:
+  root: results
+  cache: cache
+  models: models
+  ray: ray
+  lightning: lightning
+
+experiment_space:
+  seeds: [3] # [3, 27, 44]
+  student_types: ["pretrained", "shallow"]
+  objective:
+    jsd_betas: [0.5]  # [0.0, 0.25, 0.5, 0.75, 1.0]
+    weight_variants:
+      # - "only_outputs"
+      - "balanced"
+      # - "no_embed"
+      ### - "no_attn_scores"
+      # - "no_attn_out"
+      # - "no_mlp"
+      # - "no_resid"
+      # - "with_embed"
+      ### - "with_attn_scores"
+      # - "with_attn_out"
+      # - "with_mlp"
+      # - "with_resid"
+  projection:
+    directions: ["up", "down"]
+    training_methods: ["offline", "online", "randomized"]
+    offline_alignment_betas: [0.5]  # [0.0, 0.25, 0.5, 0.75, 1.0]
+  filters:
+    include: null
+    exclude: null
+
+training_params:
+  dataset:
+      name: HuggingFaceFW/fineweb-edu
+      subset: "sample-10BT"
+      split: train
+      shuffle: false
+      token_rename: false
+  seq_len: 2048
+  train_batch_size: 1
+  test_batch_size: 16
+  total_tokens: 100000000
+  num_epochs: 1
+  n_trials: 5  # 25
+  reproducible_backend: true
+  device: cuda
+  torch_dtype: bfloat16
+
+  controls:
+    # NOTE: baselines are teacher (always with no training,
+    # also ft versions if requested below [FIXME]), finetuned
+    # students, and students with no training
+    finetune_teacher: false
+    get_baselines: true
+    run_or_test: run
+
+  resources:
+    max_failures: 2
+    num_available_gpus: 2
+    stream_task_data: true
+    projector:
+      num_data_workers: 12
+      num_ray_workers: 1
+      num_cpus_per_trial: 24
+      num_gpus_per_trial: 1.0
+    teacher:
+      num_data_workers: 0
+      num_ray_workers: 1
+      num_cpus_per_trial: 6
+      num_gpus_per_trial: 1.0
+    student:
+      num_data_workers: 0
+      num_ray_workers: 1
+      num_cpus_per_trial: 6
+      num_gpus_per_trial: 1.0
+
+  offline_projection:
+    dataset:
+      name: ryanaswift7/fineweb-edu-pythia-kdfp-subsets
+      subset: v1
+      split: train
+      shuffle: false
+      token_rename: false
+    total_tokens: 1000000
+    cache_batch_size: 8
+    train_batch_size: 128
+    num_epochs: 1
+    n_trials: 5
+    force_cache_all: false
+
+  wandb:
+    project: 'kdfp-ted-fineweb-100m'
+    group: *suite
+
+
+hook_types:
+  single:
+    - "hook_embed"
+  per_layer:
+    # - "attn.hook_attn_scores"
+    - "hook_attn_out"
+    - "hook_mlp_out"
+    - "hook_resid_post"
+
+
+hparams:
+  fixed:
+    teacher:
+      lr: 2e-5
+      weight_decay: 2e-4
+      max_grad_norm: 0.5
+
+    pretrained:
+      ft:
+        lr: 3.4e-5
+        weight_decay: 1e-2
+        max_grad_norm: 2.0
+        temperature: 1.0
+      kd:
+        lr: 2.5e-5
+        weight_decay: 4.9e-4
+        max_grad_norm: 0.4
+        temperature: 0.8
+
+    shallow:
+      ft:
+        lr: 4.9e-5
+        weight_decay: 3e-4
+        max_grad_norm: 0.4
+        temperature: 3e-1
+      kd:
+        lr: 4.3e-4
+        weight_decay: 4.9e-2
+        max_grad_norm: 3e-1
+        temperature: 0.5
+
+    off_proj:
+      lr: 4.5e-4
+      weight_decay: 1.3e-2
+      tied_weights: true
+
+  tune:
+    lr:
+      mini: 1e-6
+      maxi: 1e-3
+    weight_decay:
+      mini: 1e-4
+      maxi: 0.1
+    temperature:
+      mini: 0.1
+      maxi: 2.0
+    max_grad_norm:
+      mini: 0.1
+      maxi: 2.0
+
+tasks:
+  names:
+    - hellaswag
+    - arc_challenge
+    - arc_easy
+    - boolq
+    - piqa
+    - sciq
+    - winogrande
+

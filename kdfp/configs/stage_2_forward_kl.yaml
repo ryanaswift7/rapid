@@ -1,0 +1,177 @@
+suite_title: &suite 'forward_kl_round2'
+models:
+  teacher:
+    name: &teacher_name meta-llama/Llama-3.2-3B
+    layer_reduction_factor: null
+  pretrained:
+    name: meta-llama/Llama-3.2-1B
+    layer_reduction_factor: null
+  shallow:
+    name: *teacher_name
+    layer_reduction_factor: 0.45  # this was not updated for llama
+
+directories:
+  root: round2
+  cache: cache
+  models: models
+  ray: ray1
+  lightning: lightning1
+
+experiment_space:
+  seeds: [3, 33, 333]
+  student_types: ["pretrained"]
+  objective:
+    weight_variants:
+      - "only_outputs"
+      # - "balanced"
+      # - "no_embed"
+      ### - "no_attn_scores"
+      # - "no_attn_out"
+      # - "no_mlp"
+      # - "no_resid"
+      # - "with_embed"
+      ### - "with_attn_scores"
+      # - "with_attn_out"
+      # - "with_mlp"
+      # - "with_resid"
+  projection:
+    directions: ["up", "down"]
+    training_methods: ["randomized"]
+    offline_alignment_betas: [0.5]  # [0.0, 0.25, 0.5, 0.75, 1.0]
+  filters:
+    include: null
+    exclude: null
+
+training_params:
+  dataset:
+      name: ryanaswift7/fineweb-edu-pythia-kdfp-subsets-100m
+      subset: v1
+      split: train
+      shuffle: false
+      token_rename: false
+  seq_len: 256
+  train_batch_size: 3
+  test_batch_size: 16
+  total_tokens: 100000000
+  num_epochs: 1
+  n_trials: 15
+  reproducible_backend: true
+  device: cuda
+  torch_dtype: bfloat16
+
+  controls:
+    # NOTE: baselines are teacher (always with no training,
+    # also ft versions if requested below [FIXME]), finetuned
+    # students, and students with no training
+    finetune_teacher: false
+    get_baselines:
+      - teacher
+      - ft
+      - no_train
+      - kd_traditional_fwd_kld
+      - kd_traditional_rev_kld
+      - kd_resid_fwd_kld
+      - kd_resid_rev_kld
+    run_or_test: run
+
+  resources:
+    max_failures: 5
+    stream_task_data: true
+    projector:
+      num_data_workers: 8
+    teacher:
+      num_data_workers: 0
+    student:
+      num_data_workers: 0
+
+  offline_projection:
+    dataset:
+      name: ryanaswift7/fineweb-edu-pythia-kdfp-subsets
+      subset: v1
+      split: train
+      shuffle: false
+      token_rename: false
+    total_tokens: 1000000
+    cache_batch_size: 8
+    train_batch_size: 128
+    num_epochs: 1
+    n_trials: 5
+    force_cache_all: false
+
+  wandb:
+    project: 'round-2-stage-2-jsd-beta-search'
+    group: *suite
+
+
+hook_types:
+  single:
+    - "hook_embed"
+  per_layer:
+    # - "attn.hook_attn_scores"
+    - "hook_attn_out"
+    - "hook_mlp_out"
+    - "hook_resid_post"
+
+
+hparams:
+  fixed:
+    teacher:
+      lr: 2e-5
+      weight_decay: 2e-4
+      max_grad_norm: 0.5
+
+    pretrained:
+      ft:
+        lr: 3.4e-5
+        weight_decay: 1e-2
+        max_grad_norm: 2.0
+        temperature: 1.0
+      kd:
+        lr: 1.4585e-5
+        weight_decay: 0.0644
+        max_grad_norm: 1.9544
+        temperature: 1.3775
+
+    shallow:
+      ft:
+        lr: 4.9e-5
+        weight_decay: 3e-4
+        max_grad_norm: 0.4
+        temperature: 3e-1
+      kd:
+        lr: 4.3e-4
+        weight_decay: 4.9e-2
+        max_grad_norm: 3e-1
+        temperature: 0.5
+
+    off_proj:
+      lr: 4.5e-4
+      weight_decay: 1.3e-2
+      tied_weights: true
+
+  tune:
+    lr:
+      mini: 1e-6
+      maxi: 1e-3
+    weight_decay:
+      mini: 1e-4
+      maxi: 0.1
+    temperature:
+      mini: 0.1
+      maxi: 2.0
+    max_grad_norm:
+      mini: 0.1
+      maxi: 2.0
+
+tasks:
+  names:
+    # - hellaswag
+    - arc_challenge
+    - arc_easy
+    - boolq
+    - triviaqa
+    - piqa
+    - sciq
+    - winogrande
+    - mmlu
+    - drop
