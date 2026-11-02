@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 import pandas as pd
 import pytest
 
-import kdfp.schemas.experiments.experimentInstance as experiment_instance_module
-from kdfp.schemas.experiments.experimentInstance import ExperimentInstance
+import rapid.schemas.experiments.experimentInstance as experiment_instance_module
+from rapid.schemas.experiments.experimentInstance import ExperimentInstance
 
 
 def _instance_with_force_rerun() -> ExperimentInstance:

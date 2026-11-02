@@ -6,7 +6,7 @@ from transformers import AutoTokenizer
 from transformers import AutoModelForCausalLM
 
 # Import your module directly
-from kdfp.utils.shallow_model_loading import (
+from rapid.utils.shallow_model_loading import (
     load_shallow, 
     get_indices_and_num_layers_to_keep
 )
@@ -30,7 +30,7 @@ class TestWeightCopying:
             setattr(model, comp, c)
         return model
 
-    @patch('kdfp.utils.shallow_model_loading.HookedTransformer')
+    @patch('rapid.utils.shallow_model_loading.HookedTransformer')
     def test_tl_layer_weights_copied_correctly(self, mock_ht, mock_tl_model):
         mock_ht.from_pretrained_no_processing.return_value = mock_tl_model
         
@@ -48,9 +48,9 @@ class TestWeightCopying:
                 mock_tl_model.blocks[idx].state_dict()
             )
 
-    @patch('kdfp.utils.shallow_model_loading.AutoModelForCausalLM')
-    @patch('kdfp.utils.shallow_model_loading.AutoConfig')
-    @patch('kdfp.utils.shallow_model_loading.AutoTokenizer')
+    @patch('rapid.utils.shallow_model_loading.AutoModelForCausalLM')
+    @patch('rapid.utils.shallow_model_loading.AutoConfig')
+    @patch('rapid.utils.shallow_model_loading.AutoTokenizer')
     def test_hf_layer_weights_copied_correctly(self, mock_tok, mock_cfg, mock_model):
         # Setup Config
         config = MagicMock()
@@ -89,9 +89,9 @@ class TestKeepIndicesValidation:
         (24, 0.17, [0, 8, 15, 23]),          # 24 * 0.17 ≈ 4 layers
         (16, 0.125, [0, 15]),                # 16 * 0.125 = 2 layers
     ])
-    @patch('kdfp.utils.shallow_model_loading.AutoModelForCausalLM')
-    @patch('kdfp.utils.shallow_model_loading.AutoConfig')
-    @patch('kdfp.utils.shallow_model_loading.AutoTokenizer')
+    @patch('rapid.utils.shallow_model_loading.AutoModelForCausalLM')
+    @patch('rapid.utils.shallow_model_loading.AutoConfig')
+    @patch('rapid.utils.shallow_model_loading.AutoTokenizer')
     def test_hf_keep_indices_returned(self, mock_tokenizer, mock_config, mock_model, 
                                        total_layers, reduction_factor, expected_indices):
         """Test keep_indices calculation for various layer counts and reduction factors."""
@@ -140,7 +140,7 @@ class TestKeepIndicesValidation:
             f"expected {expected_indices}, got {keep_indices}"
         )
     
-    @patch('kdfp.utils.shallow_model_loading.HookedTransformer')
+    @patch('rapid.utils.shallow_model_loading.HookedTransformer')
     def test_tl_keep_indices_returned(self, mock_hooked_transformer):
         """Test that TransformerLens mode returns correct keep_indices."""
         # Setup mock
@@ -176,7 +176,7 @@ class TestKeepIndicesValidation:
 class TestEdgeCases:
     """Test edge cases for the reduction factor."""
     
-    @patch('kdfp.utils.shallow_model_loading.HookedTransformer')
+    @patch('rapid.utils.shallow_model_loading.HookedTransformer')
     def test_minimum_one_layer(self, mock_hooked_transformer):
         """Test that at least one layer is kept even with very small reduction factor."""
         # Setup mock
@@ -208,7 +208,7 @@ class TestEdgeCases:
         assert len(keep_indices) == 1
         assert keep_indices == [0]
     
-    @patch('kdfp.utils.shallow_model_loading.HookedTransformer')
+    @patch('rapid.utils.shallow_model_loading.HookedTransformer')
     def test_reduction_factor_greater_than_one(self, mock_hooked_transformer):
         """Test that reduction factor > 1 keeps all layers."""
         # Setup mock
@@ -355,7 +355,7 @@ class TestFirstNSelection:
         assert first_n_indices == [0, 1, 2, 3, 4, 5]  # First 6 layers
         assert linspace_indices == [0, 2, 4, 7, 9, 11]  # Evenly spaced
     
-    @patch('kdfp.utils.shallow_model_loading.HookedTransformer')
+    @patch('rapid.utils.shallow_model_loading.HookedTransformer')
     def test_tl_first_n_selection(self, mock_hooked_transformer):
         """Test that TransformerLens mode uses first_n selection correctly."""
         total_layers = 8
@@ -392,9 +392,9 @@ class TestFirstNSelection:
         expected_indices = [0, 1, 2, 3]
         assert keep_indices == expected_indices
     
-    @patch('kdfp.utils.shallow_model_loading.AutoModelForCausalLM')
-    @patch('kdfp.utils.shallow_model_loading.AutoConfig')
-    @patch('kdfp.utils.shallow_model_loading.AutoTokenizer')
+    @patch('rapid.utils.shallow_model_loading.AutoModelForCausalLM')
+    @patch('rapid.utils.shallow_model_loading.AutoConfig')
+    @patch('rapid.utils.shallow_model_loading.AutoTokenizer')
     def test_hf_first_n_selection(self, mock_tokenizer, mock_config, mock_model):
         """Test that HuggingFace mode uses first_n selection correctly."""
         total_layers = 10

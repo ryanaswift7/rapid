@@ -12,5 +12,5 @@
 
 source /project2/kpsounis_171/ryanswif/kd_first_principles/scripts/slurm/common.slurm
 which python
-which kdfp
-kdfp run -c kdfp/configs/g3_40m_toks.yaml
+which rapid
+rapid run -c rapid/configs/g3_40m_toks.yaml

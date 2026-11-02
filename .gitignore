@@ -1,5 +1,5 @@
 .vscode/
-kdfp.egg-info/
+rapid.egg-info/
 kd_first_principles.egg-info/
 .venv/
 *pycache*

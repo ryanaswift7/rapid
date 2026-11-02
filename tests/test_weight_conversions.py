@@ -3,7 +3,7 @@ import torch
 from transformer_lens import HookedTransformer
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from kdfp.utils.weight_conversions import convert_hooked_to_hf_weights
+from rapid.utils.weight_conversions import convert_hooked_to_hf_weights
 
 TEST_MODELS = [
     "EleutherAI/pythia-14m",

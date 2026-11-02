@@ -12,5 +12,5 @@
 
 source /project2/kpsounis_171/ryanswif/kd_first_principles/scripts/slurm/common.slurm
 which python
-which kdfp
-kdfp run -c kdfp/configs/qwen25/seed333_qwen25_40m_toks_seq1024_up_online.yaml
+which rapid
+rapid run -c rapid/configs/qwen25/seed333_qwen25_40m_toks_seq1024_up_online.yaml

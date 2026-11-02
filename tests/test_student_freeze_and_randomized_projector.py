@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
-from kdfp.core.projector.randomized.RandomizedProjector import RandomizedProjector
-from kdfp.core.student.student import StudentModule
-from kdfp.utils.enums import ProjectionDirection
+from rapid.core.projector.randomized.RandomizedProjector import RandomizedProjector
+from rapid.core.student.student import StudentModule
+from rapid.utils.enums import ProjectionDirection
 
 
 def test_student_train_keeps_teacher_frozen_and_in_eval_mode():

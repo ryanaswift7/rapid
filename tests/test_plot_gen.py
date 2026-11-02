@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from kdfp.utils.plot_gen import average_across_seeds
+from rapid.utils.plot_gen import average_across_seeds
 
 
 def test_average_across_seeds_uses_saved_experiment_directory_name(tmp_path: Path):

@@ -12,13 +12,13 @@ log() {
 }
 
 for config in \
-  kdfp/configs/qwen25/qwen25_smoltalk_rand_n_base.yaml \
-  kdfp/configs/qwen25/qwen25_smoltalk_online.yaml \
-  kdfp/configs/qwen25/qwen25_smoltalk_balanced_rand.yaml \
-  kdfp/configs/qwen25/qwen25_smoltalk_balanced_online.yaml
+  rapid/configs/qwen25/qwen25_smoltalk_rand_n_base.yaml \
+  rapid/configs/qwen25/qwen25_smoltalk_online.yaml \
+  rapid/configs/qwen25/qwen25_smoltalk_balanced_rand.yaml \
+  rapid/configs/qwen25/qwen25_smoltalk_balanced_online.yaml
 do
   log "STARTED ${config}"
-  if kdfp run -c "${config}"; then
+  if rapid run -c "${config}"; then
     log "FINISHED ${config}"
   else
     log "FAILED ${config}"

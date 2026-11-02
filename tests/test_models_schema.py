@@ -1,4 +1,4 @@
-from kdfp.schemas.models import ModelSelection
+from rapid.schemas.models import ModelSelection
 
 
 def test_pretrained_tokenizer_name_is_accepted():

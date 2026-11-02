@@ -18,7 +18,7 @@ Install the repository environment and package first if necessary:
 
 ```bash
 conda env create -f environment.yaml
-conda activate kdfp
+conda activate rapid
 pip install -e .
 ```
 

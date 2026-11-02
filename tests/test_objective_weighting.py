@@ -1,13 +1,13 @@
 import torch
 import pytest
 
-from kdfp.schemas.dynamic_objective_weights import (
+from rapid.schemas.dynamic_objective_weights import (
     DynamicObjectiveLossPL,
     RawObjectiveLosses,
     StaticObjectiveLossPL,
 )
-from kdfp.schemas.objective_weights import OBJECTIVE_WEIGHT_VARIANTS_MAP
-from kdfp.core.student.training_utils import forward_kl_divergence
+from rapid.schemas.objective_weights import OBJECTIVE_WEIGHT_VARIANTS_MAP
+from rapid.core.student.training_utils import forward_kl_divergence
 
 
 def test_objective_variants_expose_active_objectives():
