@@ -1,0 +1,119 @@
+suite_title: &suite 'qwen25_smoltalk_balanced_online_cot'
+models:
+  teacher:
+    name: &teacher_name Qwen/Qwen2.5-3B
+    layer_reduction_factor: null
+  pretrained:
+    name: Qwen/Qwen2.5-0.5B
+    tokenizer_name: Qwen/Qwen2.5-0.5B-Instruct
+    layer_reduction_factor: null
+  shallow:
+    name: *teacher_name
+    layer_reduction_factor: 0.45
+
+directories:
+  root: iclr_fix
+  cache: cache
+  models: models
+  ray: ray-qwen
+  lightning: lightning--qwen
+
+experiment_space:
+  seeds: [3, 33, 333]
+  student_types: ["pretrained"]
+  objective:
+    weight_variants:
+      - "balanced"
+  projection:
+    init_mode: 'per-component'
+    directions: ["up"]
+    training_methods: ["online"]
+    offline_alignment_betas: [0.5]
+  filters:
+    include: null
+    exclude: null
+
+training_params:
+  dataset:
+    name: ryanaswift7/smoltalk-reasoning-gemma3-40k
+    subset: default
+    split: train
+    shuffle: true
+    token_rename: false
+  seq_len: 1024
+  train_batch_size: 1
+  test_batch_size: 1
+  total_tokens: 40000000
+  num_epochs: 1
+  n_trials: 8
+  reproducible_backend: true
+  device: cuda
+  torch_dtype: bfloat16
+  controls:
+    finetune_teacher: false
+    get_baselines: []
+    run_or_test: run
+  resources:
+    max_failures: 5
+    stream_task_data: true
+    projector:
+      num_data_workers: 12
+    teacher:
+      num_data_workers: 0
+    student:
+      num_data_workers: 0
+  offline_projection:
+    dataset:
+      name: ryanaswift7/smoltalk-reasoning-gemma3-40k
+      subset: default
+      split: train
+      shuffle: true
+      token_rename: false
+    total_tokens: 1000000
+    cache_batch_size: 8
+    train_batch_size: 128
+    num_epochs: 1
+    n_trials: 4
+    force_cache_all: false
+  wandb:
+    project: 'qwen25_smoltalk_balanced_online_cot'
+    group: *suite
+
+hook_types:
+  single:
+    - "hook_embed"
+  per_layer:
+    - "hook_attn_out"
+    - "hook_mlp_out"
+    - "hook_resid_post"
+
+hparams:
+  fixed:
+    pretrained:
+      ft:
+        lr: 1.2e-05
+        weight_decay: 1e-03
+        max_grad_norm: 0.5
+        temperature: 0.9
+      kd:
+        lr: 3e-05
+        weight_decay: 1e-04
+        max_grad_norm: 2.0
+        temperature: 1.1
+  tune:
+    lr:
+      choices: [8e-6, 1.2e-5, 1.8e-5, 2.5e-5, 3e-5]
+    weight_decay:
+      choices: [1e-4, 1e-3, 1e-2, 5e-2]
+    temperature:
+      choices: [0.7, 0.9, 1.1, 1.4, 1.8]
+    max_grad_norm:
+      choices: [0.5, 1.0, 2.0]
+
+tasks:
+  names:
+    - bbh_cot_fewshot
+    - mmlu_cot_llama
+    - arc_challenge_llama
+    - gpqa_diamond_cot_zeroshot
+    - gsm8k_cot_llama

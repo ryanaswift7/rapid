@@ -14,8 +14,8 @@ log() {
 for config in \
   rapid/configs/gemma3/g3_smoltalk_rand_n_base.yaml \
   rapid/configs/gemma3/g3_smoltalk_online.yaml \
-  rapid/configs/gemma3/g3_smoltalk_balanced_rand.yaml \
-  rapid/configs/gemma3/g3_smoltalk_balanced_online.yaml
+  # rapid/configs/gemma3/g3_smoltalk_balanced_rand.yaml \
+  # rapid/configs/gemma3/g3_smoltalk_balanced_online.yaml
 do
   log "STARTED ${config}"
   if rapid run -c "${config}"; then
