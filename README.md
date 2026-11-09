@@ -51,26 +51,30 @@ wandb login
 
 ## Reproducing the main results
 
-From the repository root, run the Gemma 3 and Qwen 2.5 SmolTalk experiment
-wrappers:
+From the repository root, run the wrappers for Qwen 2.5 and Gemma 3 on
+SmolTalk and OpenThoughts:
 
 ```bash
-./scripts/run_smoltalk_gemma3.sh
-./scripts/run_smoltalk_qwen.sh
+./scripts/non_cot/run_smoltalk_gemma3.sh
+./scripts/non_cot/run_smoltalk_qwen.sh
+./scripts/non_cot/run_openthoughts_gemma3.sh
+./scripts/non_cot/run_openthoughts_qwen.sh
 ```
 
-Each wrapper runs its four configs sequentially and stops if a config fails.
-Together, the configs cover randomized and learned online projectors for the
-residual-only and all-activation objectives. The configs use seeds `3`, `33`,
-and `333`, train on 40M tokens with sequence length 1024, and evaluate ARC
-Challenge, BBH, GPQA, and MMLU. The first config in each wrapper also runs the
-configured fine-tuning and traditional KD baselines. The YAML files contain the
-full model, data, training, and evaluation settings:
+Each wrapper runs its balanced randomized and balanced online configs
+sequentially and stops if a config fails. The configs use seeds `3`, `33`, and
+`333`, train on 40M tokens with sequence length 1024, and evaluate ARC
+Challenge, BBH, GPQA, and MMLU. The YAML files contain the full model, data,
+training, and evaluation settings:
 
-- Gemma 3: `rapid/configs/gemma3/g3_smoltalk_*.yaml`
-- Qwen 2.5: `rapid/configs/qwen25/qwen25_smoltalk_*.yaml`
+- Gemma 3 SmolTalk: `rapid/configs/gemma3/g3_smoltalk_balanced_*.yaml`
+- Qwen 2.5 SmolTalk: `rapid/configs/qwen25/qwen25_smoltalk_balanced_*.yaml`
+- OpenThoughts uses matching `*_openthoughts_balanced_{rand,online}.yaml`
+  configs under the corresponding model directory.
 
-Wrapper progress is appended to `logs/smoltalk_experiments.log`.
+SmolTalk and OpenThoughts wrapper progress is appended to
+`logs/smoltalk_experiments.log` and `logs/openthoughts_experiments.log`,
+respectively.
 
 ## Running the experiment harness directly
 
@@ -134,18 +138,23 @@ The input paths in the configs point to checkpoints produced by the SmolTalk
 wrappers. For details on the analysis config, metrics, and output files, see
 [`representation_similarity/README.md`](representation_similarity/README.md).
 
-## Chain-of-Thought evaluation (work in progress)
+## Chain-of-Thought evaluation
 
-The following CoT evaluation variants are a work in progress:
+Run the balanced CoT evaluation variants for both datasets and models with:
 
 ```bash
-./scripts/cot/run_smoltalk_gemma3.sh
-./scripts/cot/run_smoltalk_qwen.sh
+./scripts/cot/run_smoltalk_gemma3_cot.sh
+./scripts/cot/run_smoltalk_qwen_cot.sh
+./scripts/cot/run_openthoughts_gemma3_cot.sh
+./scripts/cot/run_openthoughts_qwen_cot.sh
 ```
 
-Each wrapper runs its four configs sequentially. Progress is appended to
-`logs/smoltalk_cot_experiments.log`. These runs are separate from the main
-results above.
+Each wrapper runs the balanced randomized and balanced online configs
+sequentially. Progress is appended to `logs/smoltalk_cot_experiments.log` or
+`logs/openthoughts_cot_experiments.log`. CoT runs use the same training/model
+and projector settings as the corresponding non-CoT reproduction configs, with
+the CoT evaluation task set. These runs are separate from the main results
+above.
 
 ## Configuration reference
 

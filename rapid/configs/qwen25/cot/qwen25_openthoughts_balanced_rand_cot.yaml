@@ -1,4 +1,4 @@
-suite_title: &suite 'qwen25_smoltalk_online_cot'
+suite_title: &suite 'qwen25_openthoughts_balanced_rand_cot'
 models:
   teacher:
     name: &teacher_name Qwen/Qwen2.5-3B
@@ -10,32 +10,28 @@ models:
   shallow:
     name: *teacher_name
     layer_reduction_factor: 0.45
-
 directories:
   root: iclr_fix
   cache: cache
   models: models
   ray: ray-qwen
   lightning: lightning--qwen
-
 experiment_space:
   seeds: [3, 33, 333]
   student_types: ["pretrained"]
   objective:
-    weight_variants:
-      - "with_resid"
+    weight_variants: ["balanced"]
   projection:
     init_mode: 'per-component'
-    directions: ["up"]
-    training_methods: ["online"]
+    directions: ["down"]
+    training_methods: ["randomized"]
     offline_alignment_betas: [0.5]
   filters:
     include: null
     exclude: null
-
 training_params:
   dataset:
-    name: ryanaswift7/smoltalk-reasoning-gemma3-40k
+    name: open-thoughts/OpenThoughts-114k
     subset: default
     split: train
     shuffle: true
@@ -64,7 +60,7 @@ training_params:
       num_data_workers: 0
   offline_projection:
     dataset:
-      name: ryanaswift7/smoltalk-reasoning-gemma3-40k
+      name: open-thoughts/OpenThoughts-114k
       subset: default
       split: train
       shuffle: true
@@ -76,17 +72,14 @@ training_params:
     n_trials: 4
     force_cache_all: false
   wandb:
-    project: 'qwen25_smoltalk_online_cot'
+    project: 'qwen25_openthoughts_balanced_rand_cot'
     group: *suite
-
 hook_types:
-  single:
-    - "hook_embed"
+  single: ["hook_embed"]
   per_layer:
     - "hook_attn_out"
     - "hook_mlp_out"
     - "hook_resid_post"
-
 hparams:
   fixed:
     pretrained:
@@ -109,7 +102,6 @@ hparams:
       choices: [0.7, 0.9, 1.1, 1.4, 1.8]
     max_grad_norm:
       choices: [0.5, 1.0, 2.0]
-
 tasks:
   names:
     - bbh_cot_fewshot

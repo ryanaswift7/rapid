@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=qwen_cot
+#SBATCH --job-name=smoltalk_non_cot
 #SBATCH --partition=gpu
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -10,7 +10,8 @@
 #SBATCH --output=slurm_logs/%x-%j.out
 #SBATCH --error=slurm_logs/%x-%j.err
 
-source /project2/kpsounis_171/ryanswif/rapid/scripts/slurm/common.slurm
+source /project2/kpsounis_171/ryanswif/rapid/scripts/common.slurm
 which python
 which rapid
-bash scripts/cot/run_smoltalk_qwen.sh
+bash scripts/non_cot/run_smoltalk_qwen.sh
+bash scripts/non_cot/run_smoltalk_gemma3.sh

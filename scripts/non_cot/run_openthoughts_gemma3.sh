@@ -2,9 +2,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 cd "${REPO_ROOT}"
-LOG_FILE="${REPO_ROOT}/logs/smoltalk_experiments.log"
+LOG_FILE="${REPO_ROOT}/logs/openthoughts_experiments.log"
 mkdir -p "$(dirname -- "${LOG_FILE}")"
 
 log() {
@@ -12,10 +12,8 @@ log() {
 }
 
 for config in \
-  rapid/configs/qwen25/qwen25_smoltalk_rand_n_base.yaml \
-  rapid/configs/qwen25/qwen25_smoltalk_online.yaml \
-  # rapid/configs/qwen25/qwen25_smoltalk_balanced_rand.yaml \
-  # rapid/configs/qwen25/qwen25_smoltalk_balanced_online.yaml
+  rapid/configs/gemma3/g3_openthoughts_balanced_rand.yaml \
+  rapid/configs/gemma3/g3_openthoughts_balanced_online.yaml
 do
   log "STARTED ${config}"
   if rapid run -c "${config}"; then
